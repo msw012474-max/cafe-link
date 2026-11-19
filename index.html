@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>카페 글로 이동</title>
+<meta property="og:title" content="카페 글로 이동 — 자침 영상">
+<meta property="og:description" content="외부 브라우저(크롬·사파리)로 열려야 가입 신청서에 면허증 파일을 붙일 수 있습니다.">
+<style>
+  :root { color-scheme: light dark; --bg:#faf8f4; --fg:#222; --sub:#666; --btn:#03c75a; --line:#ddd; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#141414; --fg:#eee; --sub:#aaa; --line:#333; } }
+  body { margin:0; background:var(--bg); color:var(--fg); font:16px/1.6 -apple-system, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; }
+  main { max-width:480px; margin:0 auto; padding:32px 16px; }
+  h1 { font-size:20px; margin:0 0 12px; }
+  p { margin:0 0 14px; }
+  .sub { color:var(--sub); font-size:14px; }
+  a.btn, button { display:block; width:100%; box-sizing:border-box; text-align:center; padding:14px; margin:10px 0; border-radius:10px; font-size:16px; text-decoration:none; border:1px solid var(--line); background:transparent; color:var(--fg); cursor:pointer; }
+  a.btn.main { background:var(--btn); color:#fff; border-color:var(--btn); font-weight:600; }
+  code { word-break:break-all; font-size:13px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>카페 글을 외부 브라우저로 엽니다</h1>
+  <p id="msg">잠시만 기다려 주십시오…</p>
+  <div id="box" hidden>
+    <a class="btn main" id="ext" href="#">크롬·사파리로 열기</a>
+    <button id="copy" type="button">카페 주소 복사</button>
+    <p class="sub">자동으로 넘어가지 않으면, 화면 오른쪽 위 <b>⋯</b> 메뉴에서 <b>외부 브라우저로 열기</b>를 누르거나, 주소를 복사해 크롬·사파리에 붙여 넣어 주십시오.<br>앱 안 브라우저에서는 가입 신청서에 면허증 파일이 붙지 않습니다.</p>
+    <p class="sub"><code id="addr"></code></p>
+    <a class="btn" id="here" href="#">그냥 여기서 열기</a>
+  </div>
+</main>
+<script>
+(function () {
+  var msg = document.getElementById('msg');
+  var a = new URLSearchParams(location.search).get('a') || '';
+  if (!/^\d{1,7}$/.test(a)) { msg.textContent = '주소가 올바르지 않습니다.'; return; }
+  var path = 'cafe.naver.com/moonssabu/' + a;
+  var target = 'https://' + path;
+  var ua = navigator.userAgent || '';
+  var android = /Android/i.test(ua);
+  var ios = /iPhone|iPad|iPod/i.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  var inApp = /Barcelona|Instagram|FBAN|FBAV|KAKAOTALK|NAVER\(inapp|Line\/|; wv\)/i.test(ua) || (ios && !/Safari\//.test(ua));
+  var ext = target;
+  if (android) ext = 'intent://' + path + '#Intent;scheme=https;action=android.intent.action.VIEW;S.browser_fallback_url=' + encodeURIComponent(target) + ';end';
+  else if (ios) ext = 'x-safari-' + target;
+  document.getElementById('ext').href = ext;
+  document.getElementById('here').href = target;
+  document.getElementById('addr').textContent = target;
+  document.getElementById('copy').onclick = function () {
+    var b = this;
+    function done() { b.textContent = '복사했습니다'; }
+    if (navigator.clipboard) navigator.clipboard.writeText(target).then(done, function () { prompt('주소를 길게 눌러 복사해 주십시오', target); });
+    else prompt('주소를 길게 눌러 복사해 주십시오', target);
+  };
+  if (!inApp) { msg.textContent = '카페로 이동합니다…'; location.replace(target); return; }
+  msg.textContent = '스레드 같은 앱 안 브라우저에서는 가입 신청서에 면허증 파일이 붙지 않아, 크롬·사파리로 엽니다.';
+  document.getElementById('box').hidden = false;
+  setTimeout(function () { location.href = ext; }, 300);
+})();
+</script>
+</body>
+</html>
