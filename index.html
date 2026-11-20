@@ -18,16 +18,22 @@
   a.btn, button { display:block; width:100%; box-sizing:border-box; text-align:center; padding:14px; margin:10px 0; border-radius:10px; font-size:16px; text-decoration:none; border:1px solid var(--line); background:transparent; color:var(--fg); cursor:pointer; }
   a.btn.main { background:var(--btn); color:#fff; border-color:var(--btn); font-weight:600; }
   code { word-break:break-all; font-size:13px; }
+  #guide { border:2px solid var(--btn); border-radius:12px; padding:16px; margin:8px 0 18px; font-size:18px; line-height:1.7; }
+  #guide b { color:var(--btn); }
+  #arrow { position:fixed; top:4px; right:14px; font-size:44px; line-height:1; color:var(--btn); font-weight:700; animation:bob 1s ease-in-out infinite; }
+  @keyframes bob { 50% { transform:translate(4px,-6px); } }
 </style>
 </head>
 <body>
 <main>
   <h1>카페 글을 외부 브라우저로 엽니다</h1>
   <p id="msg">잠시만 기다려 주십시오…</p>
+  <div id="arrow" hidden>↗</div>
+  <div id="guide" hidden>① 화면 <b>오른쪽 위 ⋯</b> 를 누르고<br>② <b>「외부 브라우저에서 열기」</b>를 눌러 주십시오.<br><span class="sub">사파리에서 카페 글이 바로 열립니다.</span></div>
   <div id="box" hidden>
     <a class="btn main" id="ext" href="#">크롬·사파리로 열기</a>
     <button id="copy" type="button">카페 주소 복사</button>
-    <p class="sub">자동으로 넘어가지 않으면, 화면 오른쪽 위 <b>⋯</b> 메뉴에서 <b>외부 브라우저로 열기</b>를 누르거나, 주소를 복사해 크롬·사파리에 붙여 넣어 주십시오.<br>앱 안 브라우저에서는 가입 신청서에 면허증 파일이 붙지 않습니다.</p>
+    <p class="sub">자동으로 넘어가지 않으면, 화면 오른쪽 위 <b>⋯</b> 메뉴에서 <b>외부 브라우저에서 열기</b>를 누르거나, 주소를 복사해 크롬·사파리에 붙여 넣어 주십시오.<br>앱 안 브라우저에서는 가입 신청서에 면허증 파일이 붙지 않습니다.</p>
     <p class="sub"><code id="addr"></code></p>
     <a class="btn" id="here" href="#">그냥 여기서 열기</a>
   </div>
@@ -56,8 +62,16 @@
     else prompt('주소를 길게 눌러 복사해 주십시오', target);
   };
   if (!inApp) { msg.textContent = '카페로 이동합니다…'; location.replace(target); return; }
-  msg.textContent = '스레드 같은 앱 안 브라우저에서는 가입 신청서에 면허증 파일이 붙지 않아, 크롬·사파리로 엽니다.';
   document.getElementById('box').hidden = false;
+  // 아이폰 스레드·인스타 등은 x-safari 주소를 막는다(11/20 스레드 iOS 실기 확인) → ⋯ 메뉴 안내. 카카오톡은 x-safari 통과(11/19 확인).
+  if (ios && !/KAKAOTALK/i.test(ua)) {
+    msg.textContent = '앱 안 브라우저에서는 가입 신청서에 면허증 파일이 붙지 않아, 사파리로 열어야 합니다.';
+    document.getElementById('guide').hidden = false;
+    document.getElementById('arrow').hidden = false;
+    document.getElementById('ext').style.display = 'none';
+    return;
+  }
+  msg.textContent = '스레드 같은 앱 안 브라우저에서는 가입 신청서에 면허증 파일이 붙지 않아, 크롬·사파리로 엽니다.';
   setTimeout(function () { location.href = ext; }, 300);
 })();
 </script>
